@@ -132,7 +132,7 @@ public class LinkMapService {
                 LinkMap targetLinkMap = linkById.get();
                 while (true) {
                     String randomString = generateRandomString(7);
-                    if (linkRepository.findByShortedLink(randomString).size() == 0) {
+                    if (!linkRepository.findByShortedLink(randomString).isPresent()) {
                         LinkMap duplicatedLinkMap = LinkMap.builder()
                                 .link(targetLinkMap.getLink())
                                 .shortedLink(targetLinkMap.getShortedLink())

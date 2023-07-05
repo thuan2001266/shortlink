@@ -5,12 +5,15 @@ import com.nauht.shortlink.config.JwtService;
 import com.nauht.shortlink.token.Token;
 import com.nauht.shortlink.token.TokenRepository;
 import com.nauht.shortlink.token.TokenType;
+import com.nauht.shortlink.user.Role;
 import com.nauht.shortlink.user.User;
 import com.nauht.shortlink.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,8 +36,10 @@ public class AuthenticationService {
         .lastname(request.getLastname())
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
-        .role(request.getRole())
+//        .role(request.getRole())
+        .role(Role.MANAGER)
         .build();
+
     var savedUser = repository.save(user);
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
@@ -86,17 +91,17 @@ public class AuthenticationService {
     tokenRepository.saveAll(validUserTokens);
   }
 
-  public void refreshToken(
-          HttpServletRequest request,
-          HttpServletResponse response
+  public ResponseEntity<AuthenticationResponse> refreshToken(
+          String authorizationHeader
   ) throws IOException {
-    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+    final String authHeader = authorizationHeader;
     final String refreshToken;
     final String userEmail;
     if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
-      return;
+      return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
     refreshToken = authHeader.substring(7);
+
     userEmail = jwtService.extractUsername(refreshToken);
     if (userEmail != null) {
       var user = this.repository.findByEmail(userEmail)
@@ -109,8 +114,9 @@ public class AuthenticationService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+        return new ResponseEntity<>(authResponse, HttpStatus.OK);
       }
     }
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }

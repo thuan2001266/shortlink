@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClickDetail {
-    private long linkId;
+    private String shortLink;
 
     private long timeClick;
 

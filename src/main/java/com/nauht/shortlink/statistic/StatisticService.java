@@ -28,21 +28,22 @@ public class StatisticService {
     @Autowired
     private LinkMapService linkMapService;
 
-    public ResponseEntity<HttpStatus> handleLinkClick(ClickDetail clickDetail) {
+    public ResponseEntity<ClickRecord> handleLinkClick(ClickDetail clickDetail) {
         try {
-            Optional<LinkMap> linkMap = linkRepository.findById(clickDetail.getLinkId());
+            Optional<LinkMap> linkMap = linkRepository.findByShortedLink(clickDetail.getShortLink());
             if (linkMap.isPresent()) {
                 LinkMap updateLinkMap = linkMap.get();
                 updateLinkMap.clicked();
                 linkRepository.save(updateLinkMap);
-                statisticRepository.save(ClickRecord.builder()
-                        .linkId(linkRepository.findById(clickDetail.getLinkId()).get())
+                ClickRecord updateRecord = ClickRecord.builder()
+                        .linkId(linkRepository.findByShortedLink(clickDetail.getShortLink()).get())
                         .browser(clickDetail.getBrowser())
                         .timeClick(clickDetail.getTimeClick())
                         .location(clickDetail.getLocation())
                         .device(clickDetail.getDevice())
-                        .build());
-                return new ResponseEntity<>(HttpStatus.OK);
+                        .build();
+                statisticRepository.save(updateRecord);
+                return new ResponseEntity<ClickRecord>(updateRecord, HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {

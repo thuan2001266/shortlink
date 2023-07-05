@@ -21,7 +21,7 @@ public class LinkMap {
     @Column(name = "link")
     private String link;
 
-    @Column(name = "shortedLink")
+    @Column(name = "shortedLink", unique=true)
     private String shortedLink;
 
     @Column(name = "clickedTime")

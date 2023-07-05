@@ -3,6 +3,7 @@ package com.nauht.shortlink.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,7 +12,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.Arrays;
 
 import static com.nauht.shortlink.user.Permission.*;
 import static com.nauht.shortlink.user.Role.*;
@@ -25,11 +35,12 @@ public class SecurityConfiguration {
 
   private final JwtAuthenticationFilter jwtAuthFilter;
   private final AuthenticationProvider authenticationProvider;
-  private final LogoutHandler logoutHandler;
+//  private final LogoutHandler logoutHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.disable())
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/v1/auth/**",
@@ -43,7 +54,10 @@ public class SecurityConfiguration {
                             "/swagger-ui/**",
                             "/webjars/**",
                             "/swagger-ui.html",
-                            "/api/v1/statistic/click"
+                            "/api/v1/statistic/click",
+                            "api/v1/auth/authenticate",
+                            "api/v1/auth/register",
+                            "api/v1/auth/refresh-token"
                     )
                     .permitAll()
                     .requestMatchers("/api/v1/statistic/click").permitAll()
@@ -77,14 +91,37 @@ public class SecurityConfiguration {
 
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .logout((logout) ->
-                    logout.logoutUrl("/api/v1/auth/logout")
-                            .addLogoutHandler(logoutHandler)
-                            .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()))
-
-    ;
-
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//            .logout((logout) ->
+//                    logout.logoutUrl("/api/v1/auth/logout")
+//                            .addLogoutHandler(logoutHandler)
+//                            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK)));
     return http.build();
+  }
+
+  @Bean
+  public WebMvcConfigurer corsConfigurer() {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET","POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+      }
+    };
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+    configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
+    configuration.setAllowCredentials(true);
+    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 }

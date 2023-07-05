@@ -1,13 +1,13 @@
 package com.nauht.shortlink.auth;
 
+import com.nauht.shortlink.config.LogoutService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -17,6 +17,8 @@ import java.io.IOException;
 public class AuthenticationController {
 
   private final AuthenticationService service;
+
+  private final LogoutService logoutService;
 
   @PostMapping("/register")
   public ResponseEntity<AuthenticationResponse> register(
@@ -32,11 +34,15 @@ public class AuthenticationController {
   }
 
   @PostMapping("/refresh-token")
-  public void refreshToken(
-      HttpServletRequest request,
-      HttpServletResponse response
+  public ResponseEntity<AuthenticationResponse> refreshToken(@RequestHeader("Authorization") String authorizationHeader
   ) throws IOException {
-    service.refreshToken(request, response);
+    return service.refreshToken(authorizationHeader);
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<HttpStatus> logout(@RequestHeader("Authorization") String authorizationHeader
+  ) throws IOException {
+    return logoutService.logout(authorizationHeader);
   }
 
 

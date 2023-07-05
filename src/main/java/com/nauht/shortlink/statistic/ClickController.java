@@ -22,7 +22,7 @@ public class ClickController {
     private UserRepository userRepository;
 
     @PostMapping("/click")
-    public ResponseEntity<HttpStatus> clickHandler(@RequestBody ClickDetail clickDetail) {
+    public ResponseEntity<ClickRecord> clickHandler(@RequestBody ClickDetail clickDetail) {
         return statisticService.handleLinkClick(clickDetail);
     }
 

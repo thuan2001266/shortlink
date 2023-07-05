@@ -4,6 +4,8 @@ import com.nauht.shortlink.token.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -11,20 +13,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class LogoutService implements LogoutHandler {
+public class LogoutService {
 
   private final TokenRepository tokenRepository;
 
-  @Override
-  public void logout(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      Authentication authentication
+
+  public ResponseEntity<HttpStatus> logout(
+      String authorizationHeader
   ) {
-    final String authHeader = request.getHeader("Authorization");
+    final String authHeader = authorizationHeader;
     final String jwt;
     if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
-      return;
+      return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
     jwt = authHeader.substring(7);
     var storedToken = tokenRepository.findByToken(jwt)
@@ -34,6 +34,8 @@ public class LogoutService implements LogoutHandler {
       storedToken.setRevoked(true);
       tokenRepository.save(storedToken);
       SecurityContextHolder.clearContext();
+      return new ResponseEntity<>(HttpStatus.OK);
     }
+    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 }
