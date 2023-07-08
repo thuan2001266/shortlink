@@ -135,7 +135,7 @@ public class LinkMapService {
                     if (!linkRepository.findByShortedLink(randomString).isPresent()) {
                         LinkMap duplicatedLinkMap = LinkMap.builder()
                                 .link(targetLinkMap.getLink())
-                                .shortedLink(targetLinkMap.getShortedLink())
+                                .shortedLink(randomString)
                                 .UTMSource(targetLinkMap.getUTMSource())
                                 .UTMCampaign(targetLinkMap.getUTMCampaign())
                                 .UTMTerm(targetLinkMap.getUTMTerm())
@@ -157,7 +157,7 @@ public class LinkMapService {
 
     public ResponseEntity<LinkMap> updateLinkMap(String authorizationHeader, LinkMap linkMap) {
         try {
-            Optional<LinkMap> linkById = linkRepository.findById(linkMap.getId());
+            Optional<LinkMap> linkById = linkRepository.findByShortedLink(linkMap.getShortedLink());
             if (linkById.isPresent()) {
                 if (linkById.get().getCreatedBy().equals(getUserName(authorizationHeader)) || getRole(authorizationHeader).equals("ADMIN")) {
                     LinkMap targetLinkMap = linkById.get();

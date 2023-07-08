@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/v1/statistic")
 public class ClickController {
 
@@ -22,7 +23,7 @@ public class ClickController {
     private UserRepository userRepository;
 
     @PostMapping("/click")
-    public ResponseEntity<ClickRecord> clickHandler(@RequestBody ClickDetail clickDetail) {
+    public ResponseEntity<ClickResponse> clickHandler(@RequestBody ClickDetail clickDetail) {
         return statisticService.handleLinkClick(clickDetail);
     }
 

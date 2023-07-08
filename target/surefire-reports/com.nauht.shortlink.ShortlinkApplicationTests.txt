@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.nauht.shortlink.ShortlinkApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.646 s - in com.nauht.shortlink.ShortlinkApplicationTests
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.268 s - in com.nauht.shortlink.ShortlinkApplicationTests

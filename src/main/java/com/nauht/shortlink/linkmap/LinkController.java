@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/linkmap")
 @Tag(name = "Linkmap")
+@CrossOrigin
 public class LinkController {
     @Autowired
     LinkRepository linkRepository;

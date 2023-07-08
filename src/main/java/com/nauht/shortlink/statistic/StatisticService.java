@@ -28,7 +28,9 @@ public class StatisticService {
     @Autowired
     private LinkMapService linkMapService;
 
-    public ResponseEntity<ClickRecord> handleLinkClick(ClickDetail clickDetail) {
+    public ResponseEntity<ClickResponse> handleLinkClick(ClickDetail clickDetail) {
+        System.out.print("clicked");
+        System.out.print(clickDetail);
         try {
             Optional<LinkMap> linkMap = linkRepository.findByShortedLink(clickDetail.getShortLink());
             if (linkMap.isPresent()) {
@@ -43,7 +45,30 @@ public class StatisticService {
                         .device(clickDetail.getDevice())
                         .build();
                 statisticRepository.save(updateRecord);
-                return new ResponseEntity<ClickRecord>(updateRecord, HttpStatus.OK);
+                LinkMap linkMapData = linkMap.get();
+                String link = linkMapData.getLink().trim();
+                if (link.endsWith("/")) {
+                    link = link.substring(0, link.length() - 1);
+                }
+                if (linkMapData.getUTMCampaign().length()>0) {
+                    link += "?utm_campaign="+linkMapData.getUTMCampaign();
+                }
+                if (linkMapData.getUTMContent().length()>0) {
+                    link += "&utm_content="+linkMapData.getUTMCampaign();
+                }
+                if (linkMapData.getUTMMedium().length()>0) {
+                    link += "&utm_medium="+linkMapData.getUTMCampaign();
+                }
+                if (linkMapData.getUTMSource().length()>0) {
+                    link += "&utm_source="+linkMapData.getUTMCampaign();
+                }
+                if (linkMapData.getUTMTerm().length()>0) {
+                    link += "&utm_term="+linkMapData.getUTMCampaign();
+                }
+
+                ClickResponse URL = ClickResponse.builder().URL(link).build();
+
+                return new ResponseEntity<ClickResponse>(URL, HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {

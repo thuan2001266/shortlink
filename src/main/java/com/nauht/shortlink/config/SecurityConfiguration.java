@@ -40,7 +40,15 @@ public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())
+            .cors(cors -> cors
+                    .configurationSource(request -> {
+                      CorsConfiguration config = new CorsConfiguration();
+                      config.setAllowedOrigins(Arrays.asList("https://kniltrohs.vercel.app"));
+                      config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+                      config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                      return config;
+                    })
+            )
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/v1/auth/**",
@@ -73,7 +81,6 @@ public class SecurityConfiguration {
                     .requestMatchers(PUT, "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
                     .requestMatchers(DELETE, "/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
 
-//                    .requestMatchers("/api/v1/user/**").hasAnyRole(ADMIN.name(), MANAGER.name())
                     .requestMatchers("/api/v1/user/activate").hasRole(ADMIN.name())
                     .requestMatchers("/api/v1/user/deactivate").hasRole(ADMIN.name())
                     .requestMatchers(POST, "/api/v1/user/activate").hasAuthority(ADMIN_UPDATE.name())
@@ -86,16 +93,14 @@ public class SecurityConfiguration {
                     .requestMatchers(POST, "/api/v1/linkmap/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
                     .requestMatchers(PUT, "/api/v1/linkmap/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
                     .requestMatchers(DELETE, "/api/v1/linkmap/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
+
+
                     .anyRequest().authenticated()
             )
 
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-//            .logout((logout) ->
-//                    logout.logoutUrl("/api/v1/auth/logout")
-//                            .addLogoutHandler(logoutHandler)
-//                            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK)));
     return http.build();
   }
 
@@ -105,7 +110,7 @@ public class SecurityConfiguration {
       @Override
       public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("https://kniltrohs.vercel.app")
                 .allowedMethods("GET","POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -113,15 +118,13 @@ public class SecurityConfiguration {
     };
   }
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-    configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
-    configuration.setAllowCredentials(true);
-    configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-  }
+//  @Bean
+//  CorsConfigurationSource corsConfigurationSource() {
+//    CorsConfiguration configuration = new CorsConfiguration();
+//    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+//    configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE"));
+//    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//    source.registerCorsConfiguration("/**", configuration);
+//    return source;
+//  }
 }

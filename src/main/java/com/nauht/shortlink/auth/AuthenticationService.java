@@ -108,8 +108,12 @@ public class AuthenticationService {
               .orElseThrow();
       if (jwtService.isTokenValid(refreshToken, user)) {
         var accessToken = jwtService.generateToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, accessToken);
+        try {
+          revokeAllUserTokens(user);
+          saveUserToken(user, accessToken);
+        } catch (Exception error) {
+
+        }
         var authResponse = AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
