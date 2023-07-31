@@ -1,5 +1,6 @@
 package com.nauht.shortlink.linkmap;
 
+import com.nauht.shortlink.Pagination.Pagination;
 import com.nauht.shortlink.config.JwtService;
 import com.nauht.shortlink.statistic.ClickDetail;
 import com.nauht.shortlink.statistic.ClickRecord;
@@ -71,6 +72,21 @@ public class LinkMapService {
             }
 
             return new ResponseEntity<>(allLink, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<?> findLinkMapByUserNameWithPageAndSearch(String authorizationHeader, Integer page, String search) {
+        try {
+            List<LinkMap> allLink = new ArrayList<LinkMap>();
+            linkRepository.findByCreatedBy(getUserName(authorizationHeader)).forEach(allLink::add);
+
+            if (allLink.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return Pagination.pagination(page, allLink, search);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }

@@ -29,8 +29,6 @@ public class StatisticService {
     private LinkMapService linkMapService;
 
     public ResponseEntity<ClickResponse> handleLinkClick(ClickDetail clickDetail) {
-        System.out.print("clicked");
-        System.out.print(clickDetail);
         try {
             Optional<LinkMap> linkMap = linkRepository.findByShortedLink(clickDetail.getShortLink());
             if (linkMap.isPresent()) {

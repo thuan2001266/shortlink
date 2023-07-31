@@ -1,6 +1,7 @@
 package com.nauht.shortlink.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nauht.shortlink.ValidateForm.ValidateForm;
 import com.nauht.shortlink.config.JwtService;
 import com.nauht.shortlink.token.Token;
 import com.nauht.shortlink.token.TokenRepository;
@@ -11,6 +12,14 @@ import com.nauht.shortlink.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +39,16 @@ public class AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
-
-  public AuthenticationResponse register(RegisterRequest request) {
+  public ResponseEntity<?> register(RegisterRequest request) {
+    var captchaResult = ValidateForm.captcha(request.getCaptcha());
+    if (captchaResult != null) {
+      return captchaResult;
+    }
     var user = User.builder()
         .firstname(request.getFirstname())
         .lastname(request.getLastname())
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
-//        .role(request.getRole())
         .role(Role.MANAGER)
         .build();
 
@@ -44,13 +56,19 @@ public class AuthenticationService {
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     saveUserToken(savedUser, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
-            .refreshToken(refreshToken)
-        .build();
+    return new ResponseEntity<AuthenticationResponse>(
+            AuthenticationResponse.builder()
+                    .accessToken(jwtToken)
+                    .refreshToken(refreshToken)
+                    .build(), HttpStatus.OK
+    );
   }
 
-  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+  public ResponseEntity<?> authenticate(AuthenticationRequest request) {
+    var captchaResult = ValidateForm.captcha(request.getCaptcha());
+    if (captchaResult != null) {
+      return captchaResult;
+    }
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
             request.getEmail(),
@@ -63,10 +81,10 @@ public class AuthenticationService {
     var refreshToken = jwtService.generateRefreshToken(user);
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
+    return new ResponseEntity<AuthenticationResponse>(AuthenticationResponse.builder()
+            .accessToken(jwtToken)
             .refreshToken(refreshToken)
-        .build();
+            .build(), HttpStatus.OK);
   }
 
   private void saveUserToken(User user, String jwtToken) {

@@ -28,7 +28,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
   private final TokenRepository tokenRepository;
-
   private final UserService userService;
 
   @Override
@@ -43,13 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return;
       }
       final String authHeader = request.getHeader(AUTHORIZATION);
-
-      System.out.println("filter "+authHeader);
-
       final String jwt;
       final String userEmail;
       if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        System.out.print("vao duoc day");
         filterChain.doFilter(request, response);
         return;
       }

@@ -1,12 +1,15 @@
 package com.nauht.shortlink.auth;
 
+import com.nauht.shortlink.ValidateForm.ValidateForm;
 import com.nauht.shortlink.config.LogoutService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -21,16 +24,24 @@ public class AuthenticationController {
   private final LogoutService logoutService;
 
   @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(
-      @RequestBody RegisterRequest request
+  public ResponseEntity<?> register(
+      @RequestBody @Valid RegisterRequest request, BindingResult bindingResult
   ) {
-    return ResponseEntity.ok(service.register(request));
+    var validateResult = ValidateForm.validate(bindingResult);
+    if (validateResult != null) {
+      return validateResult;
+    }
+    return service.register(request);
   }
   @PostMapping("/authenticate")
-  public ResponseEntity<AuthenticationResponse> authenticate(
-      @RequestBody AuthenticationRequest request
+  public ResponseEntity<?> authenticate(
+      @RequestBody @Valid AuthenticationRequest request, BindingResult bindingResult
   ) {
-    return ResponseEntity.ok(service.authenticate(request));
+    var validateResult = ValidateForm.validate(bindingResult);
+    if (validateResult != null) {
+      return validateResult;
+    }
+    return service.authenticate(request);
   }
 
   @PostMapping("/refresh-token")

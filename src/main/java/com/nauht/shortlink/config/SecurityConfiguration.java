@@ -35,7 +35,6 @@ public class SecurityConfiguration {
 
   private final JwtAuthenticationFilter jwtAuthFilter;
   private final AuthenticationProvider authenticationProvider;
-//  private final LogoutHandler logoutHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,7 +42,7 @@ public class SecurityConfiguration {
             .cors(cors -> cors
                     .configurationSource(request -> {
                       CorsConfiguration config = new CorsConfiguration();
-                      config.setAllowedOrigins(Arrays.asList("https://kniltrohs.vercel.app"));
+                      config.setAllowedOrigins(Arrays.asList("https://kniltrohs.vercel.app", "http://localhost:3000"));
                       config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
                       config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                       return config;
@@ -104,19 +103,19 @@ public class SecurityConfiguration {
     return http.build();
   }
 
-  @Bean
-  public WebMvcConfigurer corsConfigurer() {
-    return new WebMvcConfigurer() {
-      @Override
-      public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins("https://kniltrohs.vercel.app")
-                .allowedMethods("GET","POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
-      }
-    };
-  }
+//  @Bean
+//  public WebMvcConfigurer corsConfigurer() {
+//    return new WebMvcConfigurer() {
+//      @Override
+//      public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedOrigins("https://kniltrohs.vercel.app")
+//                .allowedMethods("GET","POST", "PUT", "DELETE", "OPTIONS")
+//                .allowedHeaders("*")
+//                .allowCredentials(true);
+//      }
+//    };
+//  }
 
 //  @Bean
 //  CorsConfigurationSource corsConfigurationSource() {

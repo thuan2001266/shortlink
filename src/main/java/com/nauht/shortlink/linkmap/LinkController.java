@@ -36,6 +36,10 @@ public class LinkController {
     public ResponseEntity<List<LinkMap>> getAllLinkMapByUserName(@RequestHeader("Authorization") String authorizationHeader) {
         return linkMapService.findLinkMapByUserName(authorizationHeader);
     }
+    @GetMapping
+    public ResponseEntity<?> getAllLinkMapByUserNameWithPageAndSearch(@RequestHeader("Authorization") String authorizationHeader, @RequestParam(value = "page", defaultValue = "1", required = false) Integer page, @RequestParam(value = "search", defaultValue = "", required = false) String search) {
+        return linkMapService.findLinkMapByUserNameWithPageAndSearch(authorizationHeader, page, search);
+    }
 
     @PostMapping
     public ResponseEntity<LinkMap> createLinkMap(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LinkMap linkMap) {
